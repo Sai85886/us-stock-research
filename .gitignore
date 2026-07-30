@@ -1,0 +1,35 @@
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Data & vector store (large, re-generated locally)
+data/raw/
+data/chroma/
+data/processed/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Testing & tooling
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
