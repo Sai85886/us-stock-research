@@ -21,24 +21,6 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
-## Project status
-
-| Step | Description | Status |
-|------|-------------|--------|
-| 0 | Project scaffold + config | Done |
-| 1 | Download SEC 10-K filings | Pending |
-| 2 | Load & chunk 10-K documents | Pending |
-| 3 | Embeddings + ChromaDB | Pending |
-| 4 | Basic RAG chain | Pending |
-| 5 | yfinance market data tools | Pending |
-| 6 | Tavily web search | Pending |
-| 7 | Specialized ReAct agents | Pending |
-| 8 | LangGraph supervisor | Pending |
-| 9 | Multi-agent handoffs | Pending |
-| 10 | LangSmith tracing | Pending |
-| 11 | CLI interface | Pending |
-| 12 | Docs & polish | Pending |
-
 ## Starter tickers
 
 Apple (`AAPL`), Microsoft (`MSFT`), JPMorgan (`JPM`)
