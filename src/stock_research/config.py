@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     # Paths
     data_dir: str = Field(default="data")
     raw_data_dir: str = Field(default="data/raw")
+    processed_data_dir: str = Field(default="data/processed")
     chroma_dir: str = Field(default="data/chroma")
 
 
