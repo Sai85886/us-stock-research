@@ -35,6 +35,7 @@ embed-filings = "stock_research.scripts.embed_filings:main"
 ask-filings = "stock_research.scripts.ask_filings:main"
 market-quote = "stock_research.scripts.market_quote:main"
 web-search = "stock_research.scripts.web_search:main"
+ask-agent = "stock_research.scripts.ask_agent:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
