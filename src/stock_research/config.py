@@ -15,6 +15,10 @@ class Settings(BaseSettings):
 
     # Groq LLM (Step 4+)
     groq_api_key: str = Field(default="", validation_alias="GROQ_API_KEY")
+    groq_model: str = Field(
+        default="openai/gpt-oss-20b",
+        validation_alias="GROQ_MODEL",
+    )
 
     # Tavily web search (Step 6+)
     tavily_api_key: str = Field(default="", validation_alias="TAVILY_API_KEY")
