@@ -31,6 +31,7 @@ dev = [
 ]
 
 [project.scripts]
+stock-research = "stock_research.cli:main"
 download-filings = "stock_research.scripts.download_filings:main"
 chunk-filings = "stock_research.scripts.chunk_filings:main"
 embed-filings = "stock_research.scripts.embed_filings:main"
