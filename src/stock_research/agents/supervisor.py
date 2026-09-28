@@ -114,7 +114,7 @@ def _extract_json(text: str) -> dict[str, Any]:
         raise ValueError(f"Supervisor did not return JSON: {text!r}")
     payload = json.loads(match.group(0))
     if not isinstance(payload, dict):
-        raise ValueError(f"Supervisor JSON must be an object: {text!r}")
+        raise TypeError(f"Supervisor JSON must be an object: {text!r}")
     return payload
 
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 DEFAULT_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 

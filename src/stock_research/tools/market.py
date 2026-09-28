@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import yfinance as yf
@@ -70,7 +70,7 @@ def get_quote(ticker: str) -> dict[str, Any]:
         "currency": currency,
         "volume": volume,
         "market_state": info.get("marketState"),
-        "as_of": datetime.now(timezone.utc).isoformat(),
+        "as_of": datetime.now(UTC).isoformat(),
         "source": "yfinance",
     }
 
@@ -107,7 +107,7 @@ def get_fundamentals(ticker: str) -> dict[str, Any]:
         "exchange": info.get("exchange") or info.get("fullExchangeName"),
         "website": info.get("website"),
         "summary": info.get("longBusinessSummary"),
-        "as_of": datetime.now(timezone.utc).isoformat(),
+        "as_of": datetime.now(UTC).isoformat(),
         "source": "yfinance",
     }
 

@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from stock_research.rag.chain import format_context
 from stock_research.tools.market import get_fundamentals, get_history, get_quote
@@ -39,7 +40,7 @@ class AgentTool:
         else:
             args = raw_arguments
         if not isinstance(args, dict):
-            raise ValueError("Tool arguments must be a JSON object")
+            raise TypeError("Tool arguments must be a JSON object")
         result = self.handler(**args)
         return json.dumps(result, default=str)
 

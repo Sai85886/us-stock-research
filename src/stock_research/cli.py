@@ -52,15 +52,11 @@ def status_main() -> int:
 
     if chroma_dir.exists():
         try:
-            from stock_research.ingestion.embedder import TextEmbedder
-            from stock_research.vectorstore.chroma_store import ChromaStore
+            import chromadb
 
-            store = ChromaStore(
-                persist_dir=chroma_dir,
-                embedder=TextEmbedder(settings.embedding_model),
-                collection_name=settings.chroma_collection,
-            )
-            print(f"  chroma vectors: {store.count}")
+            client = chromadb.PersistentClient(path=str(chroma_dir))
+            collection = client.get_or_create_collection(name=settings.chroma_collection)
+            print(f"  chroma vectors: {collection.count()}")
         except Exception as exc:  # noqa: BLE001 - status should keep going
             print(f"  chroma vectors: unavailable ({exc})")
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Protocol
 
 
@@ -71,7 +71,7 @@ def search_web(
         "topic": topic,
         "answer": payload.get("answer"),
         "results": _normalize_results(payload),
-        "as_of": datetime.now(timezone.utc).isoformat(),
+        "as_of": datetime.now(UTC).isoformat(),
         "source": "tavily",
     }
 

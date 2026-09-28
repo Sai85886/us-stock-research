@@ -6,6 +6,7 @@ import json
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Self
 
 import httpx
 
@@ -53,7 +54,7 @@ class EdgarClient:
     def close(self) -> None:
         self._client.close()
 
-    def __enter__(self) -> EdgarClient:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -106,7 +107,7 @@ class EdgarClient:
         url = f"{SEC_DATA_BASE}/submissions/CIK{padded_cik}.json"
         payload = self._get_json(url)
         if not isinstance(payload, dict):
-            raise ValueError(f"Unexpected submissions payload for CIK {cik}")
+            raise TypeError(f"Unexpected submissions payload for CIK {cik}")
         return payload
 
     def find_latest_10k(self, ticker: str) -> dict:
