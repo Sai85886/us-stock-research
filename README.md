@@ -9,7 +9,7 @@ Multi-agent stock research system for US equities (NYSE/NASDAQ), built with a La
 - **Market agent** — live prices and fundamentals via yfinance
 - **Web agent** — recent news via Tavily
 - **LLM** — Groq (`openai/gpt-oss-20b` by default) for low-latency multi-agent reasoning
-- **Observability** — LangSmith tracing
+- **Observability** — LangSmith tracing (`research --trace` / `ask-agent --trace`)
 
 ## Setup
 

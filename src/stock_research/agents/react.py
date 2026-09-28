@@ -8,6 +8,17 @@ from typing import Any, Protocol
 
 from stock_research.agents.tools import AgentTool
 
+try:
+    from langsmith import traceable
+except ImportError:  # pragma: no cover - dependency is declared, but keep tests resilient
+    def traceable(*args, **kwargs):  # type: ignore[misc]
+        def decorator(func):
+            return func
+
+        if args and callable(args[0]) and not kwargs:
+            return args[0]
+        return decorator
+
 
 @dataclass
 class AgentStep:
@@ -110,6 +121,7 @@ class ReActAgent:
         self.llm = llm
         self.max_steps = max_steps
 
+    @traceable(name="react_agent_run", run_type="chain")
     def run(self, question: str) -> AgentResult:
         cleaned = question.strip()
         if not cleaned:

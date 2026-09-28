@@ -8,6 +8,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any, Literal, Protocol, TypedDict
 
 from langgraph.graph import END, START, StateGraph
+from langsmith import traceable
 
 from stock_research.agents.react import AgentResult, AgentStep
 from stock_research.agents.specialists import SPECIALIST_BUILDERS, build_specialist
@@ -265,6 +266,7 @@ def build_research_graph(
     return graph.compile()
 
 
+@traceable(name="research", run_type="chain")
 def run_research(
     question: str,
     settings: Settings,

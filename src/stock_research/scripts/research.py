@@ -8,6 +8,18 @@ import sys
 
 from stock_research.agents.supervisor import run_research
 from stock_research.config import get_settings
+from stock_research.observability import configure_tracing, tracing_status
+
+
+def _run_with_optional_tracing(tracing_on: bool, question: str, settings, max_handoffs: int):
+    if tracing_on:
+        return run_research(question, settings, max_handoffs=max_handoffs)
+    try:
+        from langsmith.run_helpers import tracing_context
+    except ImportError:
+        return run_research(question, settings, max_handoffs=max_handoffs)
+    with tracing_context(enabled=False):
+        return run_research(question, settings, max_handoffs=max_handoffs)
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,6 +43,17 @@ def parse_args() -> argparse.Namespace:
         default=3,
         help="Maximum specialist handoffs (default: 3)",
     )
+    trace_group = parser.add_mutually_exclusive_group()
+    trace_group.add_argument(
+        "--trace",
+        action="store_true",
+        help="Force-enable LangSmith tracing for this run",
+    )
+    trace_group.add_argument(
+        "--no-trace",
+        action="store_true",
+        help="Disable LangSmith tracing for this run",
+    )
     return parser.parse_args()
 
 
@@ -45,11 +68,23 @@ def main() -> int:
         print("A question is required.", file=sys.stderr)
         return 1
 
+    enabled = True if args.trace else False if args.no_trace else None
     try:
-        result = run_research(
+        tracing_on = configure_tracing(settings, enabled=enabled)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    if args.verbose and tracing_on:
+        status = tracing_status()
+        print(f"LangSmith tracing: on (project={status['project']})")
+
+    try:
+        result = _run_with_optional_tracing(
+            tracing_on,
             question,
             settings,
-            max_handoffs=args.max_handoffs,
+            args.max_handoffs,
         )
     except Exception as exc:  # noqa: BLE001 - CLI should show clean errors
         print(f"Error: {exc}", file=sys.stderr)
