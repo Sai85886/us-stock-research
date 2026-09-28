@@ -1,4 +1,4 @@
-"""Tests for the LangGraph supervisor."""
+"""Tests for the LangGraph supervisor and handoffs."""
 
 from __future__ import annotations
 
@@ -7,14 +7,16 @@ from stock_research.agents.supervisor import parse_route_decision, run_research
 from stock_research.config import Settings
 
 
-class FakeRouter:
-    def __init__(self, text: str) -> None:
-        self.text = text
+class ScriptedRouter:
+    def __init__(self, responses: list[str]) -> None:
+        self.responses = list(responses)
         self.calls: list[tuple[str, str]] = []
 
     def complete(self, system_prompt: str, user_prompt: str) -> str:
         self.calls.append((system_prompt, user_prompt))
-        return self.text
+        if not self.responses:
+            return '{"route":"FINISH","reason":"fallback"}'
+        return self.responses.pop(0)
 
 
 class FakeAgent:
@@ -31,12 +33,20 @@ class FakeAgent:
             steps=[
                 AgentStep(
                     thought=None,
-                    tool_name="dummy",
+                    tool_name=f"{self.name}_tool",
                     tool_args={"q": question},
                     observation='{"ok": true}',
                 )
             ],
         )
+
+
+def _specialists() -> dict[str, FakeAgent]:
+    return {
+        "rag": FakeAgent("rag"),
+        "market": FakeAgent("market"),
+        "web": FakeAgent("web"),
+    }
 
 
 def test_parse_route_decision_accepts_embedded_json():
@@ -47,15 +57,23 @@ def test_parse_route_decision_accepts_embedded_json():
     assert "live price" in reason
 
 
-def test_run_research_routes_to_market_specialist():
+def test_parse_route_decision_accepts_finish():
+    route, reason = parse_route_decision(
+        '{"route":"FINISH","reason":"Enough context"}'
+    )
+    assert route == "FINISH"
+    assert "Enough" in reason
+
+
+def test_run_research_single_specialist():
     settings = Settings()
-    router = FakeRouter('{"route":"market","reason":"price question"}')
-    market = FakeAgent("market")
-    specialists = {
-        "rag": FakeAgent("rag"),
-        "market": market,
-        "web": FakeAgent("web"),
-    }
+    router = ScriptedRouter(
+        [
+            '{"route":"market","reason":"price question"}',
+            '{"route":"FINISH","reason":"done"}',
+        ]
+    )
+    specialists = _specialists()
 
     result = run_research(
         "What is AAPL trading at?",
@@ -64,8 +82,36 @@ def test_run_research_routes_to_market_specialist():
         specialists=specialists,
     )
 
-    assert result.route == "market"
-    assert result.route_reason == "price question"
+    assert result.routes == ["market"]
     assert result.answer == "market answered: What is AAPL trading at?"
-    assert market.questions == ["What is AAPL trading at?"]
-    assert result.agent_steps[0].tool_name == "dummy"
+    assert specialists["market"].questions == ["What is AAPL trading at?"]
+    assert specialists["rag"].questions == []
+    assert result.agent_steps[0].tool_name == "market_tool"
+
+
+def test_run_research_multi_agent_handoff_and_synthesize():
+    settings = Settings()
+    router = ScriptedRouter(
+        [
+            '{"route":"market","reason":"need price"}',
+            '{"route":"rag","reason":"need risks"}',
+            '{"route":"FINISH","reason":"have both"}',
+            "Combined: price from market and risks from rag.",
+        ]
+    )
+    specialists = _specialists()
+
+    result = run_research(
+        "What is AAPL's price and what are its 10-K risk factors?",
+        settings,
+        router=router,
+        specialists=specialists,
+    )
+
+    assert result.routes == ["market", "rag"]
+    assert specialists["market"].questions
+    assert specialists["rag"].questions
+    assert "Combined" in result.answer
+    assert len(result.specialist_answers) == 2
+    # 2 route calls + 1 finish call + 1 synthesize call
+    assert len(router.calls) == 4

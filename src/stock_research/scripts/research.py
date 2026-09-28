@@ -25,6 +25,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print the full result as JSON",
     )
+    parser.add_argument(
+        "--max-handoffs",
+        type=int,
+        default=3,
+        help="Maximum specialist handoffs (default: 3)",
+    )
     return parser.parse_args()
 
 
@@ -40,7 +46,11 @@ def main() -> int:
         return 1
 
     try:
-        result = run_research(question, settings)
+        result = run_research(
+            question,
+            settings,
+            max_handoffs=args.max_handoffs,
+        )
     except Exception as exc:  # noqa: BLE001 - CLI should show clean errors
         print(f"Error: {exc}", file=sys.stderr)
         return 1
@@ -48,9 +58,11 @@ def main() -> int:
     if args.json:
         payload = {
             "question": result.question,
+            "routes": result.routes,
             "route": result.route,
             "route_reason": result.route_reason,
             "answer": result.answer,
+            "specialist_answers": result.specialist_answers,
             "agent_steps": [
                 {
                     "thought": step.thought,
@@ -65,7 +77,14 @@ def main() -> int:
         return 0
 
     if args.verbose:
-        print(f"Route: {result.route} ({result.route_reason})")
+        routes = " -> ".join(result.routes) if result.routes else "(none)"
+        print(f"Routes: {routes}")
+        print(f"Last decision: {result.route_reason}")
+        if result.specialist_answers:
+            print("Specialists:")
+            for item in result.specialist_answers:
+                preview = str(item.get("answer") or "")[:180].replace("\n", " ")
+                print(f"- {item.get('agent')}: {preview}...")
         if result.agent_steps:
             print("Tool trace:")
             for index, step in enumerate(result.agent_steps, start=1):
